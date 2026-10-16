@@ -1,0 +1,45 @@
+# page.yaml: the words on your page, kept as data like everything else.
+# make_page.py puts each answer under its question. A few sentences each, in your own words;
+# leave a blank line between paragraphs. Refer to YOUR network and YOUR evidence.
+# Never put your name or full student ID here: the page is public.
+
+repository: https://github.com/JakeJakeeee/Lab_ProgrammableNetwork.git
+
+answers:
+  planes:
+    question: "Where are the data, control and management planes in your network?"
+    answer: "The management plane is represented by our YAML file and Python scripts, example `build_topo.py` and `make_page.py`for our lab, it used to define and build the network state. 
+     The control plane is the routing protocol or any protocol that control the network traffic where should the data go. 
+     The data plane is the active packet forwarding path traversing the switches and links."
+  learning:
+    question: "How did your switches learn which port leads to each host? Use your MAC table evidence."
+    answer: "Switches learn their MAC forwarding tables via source MAC address learning. 
+     For an example in `macs.txt`, when a host transmits a frame, the switch logs its source MAC and the ingress port. 
+     Directly connected hosts appear on dedicated port (port 1 and port 2), while remote hosts accessible via other switches are learned through the inter-switch trunk port (port 3)."
+  kind:
+    question: "Which of the four kinds of programmability is this assignment (a network described as data, then built and documented by scripts)? Why isn't it any of the other three?"
+    answer: "It is data-driven (declarative) programmability, also called infrastructure as code. I describe what the network should look like, and the scripts build it.
+      It is not CLI scripting, because I am not sending a list of commands to each device. It is not SDN control, because no controller is making forwarding
+      decisions while the network runs. It is also not changing how packets are processed. The work is only about describing the network as data."
+  two_am:
+    question: "Week 1's 2 a.m. change on 40 switches: what would be different if those switches were described like your network?"
+    answer: "Log in and configure to 40 switches one by one and type commands is time consuming, engineer may get tired and cause some typo on commands. Now, change one line in the YAML file and run the script. All 40 switches
+      get the same change, in seconds, make tasks more efficient."
+  model:
+    question: "What's the difference between your network's data model and its serialisation? Use YAML and JSON as the example."
+    answer: "The data model means which switches, hosts and links exist, and how
+      they connect. Serialisation is the text format used to write that down.
+      topology.yaml and topology.json hold the same model in different formats."
+  check:
+    question: "Why is it better to catch bad data in check() than with pingall? What did IPv6 notice about a duplicate address that IPv4 didn't?"
+    answer: "check() finds mistakes in the file before the network is built. pingall only
+      shows a problem after the network is already running, and it does not say why.
+      For duplicate addresses, IPv6 has Duplicate Address Detection, which marks the
+      address as dadfailed. IPv4 accepts the duplicate silently, so you only see
+      strange ping problems later."
+  git:
+    question: "What does your Git history give you that copying files into folders named topology-v2-final wouldn't?"
+    answer: "Git shows exactly what changed (git diff), when, and why (commit messages). I can
+      go back to any earlier version, and I can try changes on a branch without
+      breaking the working one. Folders like topology-v2-final are just copies. You
+      cannot tell what changed or which one is really the latest."
