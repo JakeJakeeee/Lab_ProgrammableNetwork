@@ -72,7 +72,17 @@ def check(spec):
                         problems.append(f"{hostname} and {other_host} both use {address}")
                     else:
                         seen_ipadd[address] = hostname
-                        
+    # Collect all valid switch and host names into a set
+    valid_nodes = set(spec.get("switches", []))
+    for host in spec.get("hosts", []):
+            valid_nodes.add(host["name"])
+
+    # Check that every endpoint in every link actually exists
+    for link in spec.get("links", []):
+        for endpoint in link:
+            if endpoint not in valid_nodes:
+                problems.append(f"link {link[0]}-{link[1]} uses unknown node {endpoint}")
+
     return problems
 
 
