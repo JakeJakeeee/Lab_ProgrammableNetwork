@@ -58,6 +58,21 @@ def check(spec):
     """
     problems = []
     # TODO: your code here
+    seen_ipadd = {}
+
+    for host in spec.get("hosts", []):
+            hostname = host["name"]
+    
+            for key in ["ip", "ipv6"]:
+                if key in host:
+                    address = host[key].split('/')[0]
+    
+                    if address in seen_ipadd:
+                        other_host = seen_ipadd[address]
+                        problems.append(f"{hostname} and {other_host} both use {address}")
+                    else:
+                        seen_ipadd[address] = hostname
+                        
     return problems
 
 
