@@ -10,7 +10,7 @@ answers:
     answer: |
       I designed a 4 router and create like diamond topology (r1, r2, r3, r4) where r1 and r4 are connected via two parallel paths (through r2 and r3). This creates a physical redundant loop. Each router hosts one LAN. 
       
-      For addressing, I used my designated block 10.8.0.0/16. I deliberately assigned 10.8.1.0/24 and 10.8.2.0/24 to the left side (h1, h2), and 10.8.32.0/24 and 10.8.33.0/24 to the right side (h3, h4). This continuous addressing layout allowed me to create clean summary routes across the network.
+      For addressing, I used my designated block 10.8.0.0/16. I deliberately assigned 10.8.1.0/24 and 10.8.2.0/24 to the left side (h1, h2), and 10.8.32.0/24 and 10.8.33.0/24 to the right side (h3, h4). I chose 10.8.32.0/24 and 10.8.33.0/24, so it can lets r1 use one route, 10.8.32.0/23, instead of two.
 
   summary:
     question: "Which route summarises several LANs? Which networks does it cover, why is it correct, and what else would it attract if you added a network inside its range?"
