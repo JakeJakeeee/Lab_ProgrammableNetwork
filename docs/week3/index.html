@@ -23,18 +23,18 @@ Every route was checked for loops and missing routes before it reached a router.
 
 <h2>The network</h2>
 <h3>LANs</h3>
-<section id="lans"><table><thead><tr><th>LAN</th><th>Network</th><th>Router (.1)</th><th>Host (.10)</th></tr></thead><tbody><tr><td>lan-h1</td><td><code>10.8.1.0/24</code></td><td>r1</td><td>h1 <code>10.8.1.10</code></td></tr><tr><td>lan-h2</td><td><code>10.8.2.0/24</code></td><td>r2</td><td>h2 <code>10.8.2.10</code></td></tr><tr><td>lan-h3</td><td><code>10.8.32.0/24</code></td><td>r3</td><td>h3 <code>10.8.32.10</code></td></tr><tr><td>lan-h4</td><td><code>10.8.33.0/24</code></td><td>r4</td><td>h4 <code>10.8.33.10</code></td></tr></tbody></table></section>
+<section id="lans"><table><thead><tr><th>LAN</th><th>Network</th><th>Router (.1)</th><th>Host (.10)</th></tr></thead><tbody><tr><td>lan-h1</td><td><code>10.8.1.0/24</code></td><td>r1</td><td>h1 <code>10.8.1.10</code></td></tr><tr><td>lan-h2</td><td><code>10.8.2.0/24</code></td><td>r2</td><td>h2 <code>10.8.2.10</code></td></tr><tr><td>lan-h4</td><td><code>10.8.33.0/24</code></td><td>r4</td><td>h4 <code>10.8.33.10</code></td></tr><tr><td>lan-h3</td><td><code>10.8.32.0/24</code></td><td>r3</td><td>h3 <code>10.8.32.10</code></td></tr></tbody></table></section>
 <h3>Router links</h3>
-<section id="links"><table><thead><tr><th>Link</th><th>Network</th></tr></thead><tbody><tr><td>r1 — r2</td><td><code>10.8.12.0/30</code></td></tr><tr><td>r1 — r3</td><td><code>10.8.13.0/30</code></td></tr><tr><td>r2 — r4</td><td><code>10.8.24.0/30</code></td></tr><tr><td>r3 — r4</td><td><code>10.8.34.0/30</code></td></tr></tbody></table></section>
+<section id="links"><table><thead><tr><th>Link</th><th>Network</th></tr></thead><tbody><tr><td>r1 — r2</td><td><code>10.8.12.0/30</code></td></tr><tr><td>r2 — r4</td><td><code>10.8.24.0/30</code></td></tr><tr><td>r1 — r3</td><td><code>10.8.13.0/30</code></td></tr><tr><td>r3 — r4</td><td><code>10.8.34.0/30</code></td></tr></tbody></table></section>
 <h3>Diagram</h3>
 <pre class="mermaid" id="diagram">graph LR
   h1[&quot;h1&lt;br&gt;10.8.1.10&quot;] --- r1((r1))
   h2[&quot;h2&lt;br&gt;10.8.2.10&quot;] --- r2((r2))
-  h3[&quot;h3&lt;br&gt;10.8.32.10&quot;] --- r3((r3))
   h4[&quot;h4&lt;br&gt;10.8.33.10&quot;] --- r4((r4))
+  h3[&quot;h3&lt;br&gt;10.8.32.10&quot;] --- r3((r3))
   r1((r1)) ---|10.8.12.0/30| r2((r2))
-  r1((r1)) ---|10.8.13.0/30| r3((r3))
   r2((r2)) ---|10.8.24.0/30| r4((r4))
+  r1((r1)) ---|10.8.13.0/30| r3((r3))
   r3((r3)) ---|10.8.34.0/30| r4((r4))</pre>
 
 <h2>Routing tables</h2>
@@ -134,16 +134,16 @@ A dynamic routing protocol such as OSPF would have recovered. It would have dete
       "host": "h2"
     },
     {
-      "name": "lan-h3",
-      "network": "10.8.32.0/24",
-      "router": "r3",
-      "host": "h3"
-    },
-    {
       "name": "lan-h4",
       "network": "10.8.33.0/24",
       "router": "r4",
       "host": "h4"
+    },
+    {
+      "name": "lan-h3",
+      "network": "10.8.32.0/24",
+      "router": "r3",
+      "host": "h3"
     }
   ],
   "links": [
@@ -153,14 +153,14 @@ A dynamic routing protocol such as OSPF would have recovered. It would have dete
       "10.8.12.0/30"
     ],
     [
-      "r1",
-      "r3",
-      "10.8.13.0/30"
-    ],
-    [
       "r2",
       "r4",
       "10.8.24.0/30"
+    ],
+    [
+      "r1",
+      "r3",
+      "10.8.13.0/30"
     ],
     [
       "r3",
