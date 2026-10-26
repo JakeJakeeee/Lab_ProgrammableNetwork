@@ -1,0 +1,8 @@
+PROBLEM: h2 to h1: loop r2 -> r4 -> r2
+PROBLEM: h4 to h1: loop r4 -> r2 -> r4
+Fix the description and try again: nothing was built.
+PROBLEM: h2 to h1: r2 has no route to 10.8.1.10
+PROBLEM: h2 to h3: r2 has no route to 10.8.32.10
+PROBLEM: h2 to h4: r2 has no route to 10.8.33.10
+PROBLEM: h4 to h1: r2 has no route to 10.8.1.10
+Fix the description and try again: nothing was built.
