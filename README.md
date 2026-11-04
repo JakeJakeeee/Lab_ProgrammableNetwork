@@ -66,3 +66,12 @@ The Week 3 lab implements a statically routed Layer 3 network to demonstrate man
 | `evidence3/check.txt` | Shows the pre-flight validation successfully catching routing loops and missing routes before the network is built |
 
 ---
+### Week 4
+1. Why did the first firewall rule in Step 3 have no effect, and why does blocking h1 → h3 also break h3 → h1?
+* The first firewall rule had no effect because the rule and the forwarding rule for h3 both matched an h1 to h3 ping, and both had the default priority of 32768. OpenFlow doesn’t define which of two equal-priority overlapping rules wins, so the forwarding rule won and the drop rule stayed at n_packets=0. Raising the drop rule to priority 40000 made it win every time. Blocking h1 to h3 also breaks h3 to h1 because a rule matches headers, not intentions. When h3 pings h1, h1’s reply has source 10.8.0.1 and destination 10.8.0.3, exactly what the drop rule matches, so the reply is dropped and h3 never hears back.
+
+2. In Step 5, why did one conversation survive the controller failure and another didn't?
+* The h1 to h2 conversation survived because the controller had already installed flows for it in the switch, so the switch could forward without asking the controller. The h1 to h3 conversation failed because no flow existed, so the table-miss rule sent the packet to a controller that was no longer there. After about a minute, h1 to h2 failed too, because its flows had an idle timeout of 60 seconds and expired, leaving the switch needing the controller again.
+
+3. Secure or standalone: which would you choose for a campus network, and what does the other one cost you?
+* For a campus network I would choose secure mode. It keeps your policy, such as firewall rules and access control, in force even when the controller is down. The cost is that the network slowly stops working while the controller is down. New connections fail right away. Old connections keep working for a while, then stop when their rules expire after 60 seconds. We can reduce that cost with a replicated controller cluster and proactive rules. Standalone costs in security. Traffic keeps flowing, and the switch stops following the rules, so blocked traffic can get through again. Standalone is only suitable if there are no rules to enforce and uptime matters most.
