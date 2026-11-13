@@ -1,0 +1,24 @@
+PING 10.8.50.11 (10.8.50.11) 56(84) bytes of data.
+64 bytes from 10.8.50.11: icmp_seq=1 ttl=64 time=0.313 ms
+64 bytes from 10.8.50.11: icmp_seq=2 ttl=64 time=0.140 ms
+64 bytes from 10.8.50.11: icmp_seq=3 ttl=64 time=0.245 ms
+
+--- 10.8.50.11 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 0.140/0.232/0.313/0.071 ms
+10.8.50.11 dev red1-eth0 lladdr 02:00:00:64:00:0b REACHABLE 
+== captured on blue2 meanwhile
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on blue2-eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+PING 10.8.50.11 (10.8.50.11) 56(84) bytes of data.
+64 bytes from 10.8.50.11: icmp_seq=1 ttl=64 time=0.600 ms
+64 bytes from 10.8.50.11: icmp_seq=2 ttl=64 time=0.214 ms
+
+--- 10.8.50.11 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.214/0.407/0.600/0.193 ms
+10.8.50.11 dev blue1-eth0 lladdr 02:00:00:c8:00:0b REACHABLE 
