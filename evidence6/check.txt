@@ -1,0 +1,3 @@
+PROBLEM: tenant red: MTU 1500 + 50 bytes of VXLAN = 1550, but the underlay MTU is 1500: 50 bytes too big
+PROBLEM: tenant blue: MTU 1500 + 50 bytes of VXLAN = 1550, but the underlay MTU is 1500: 50 bytes too big
+Fix the design and try again: nothing was built.
