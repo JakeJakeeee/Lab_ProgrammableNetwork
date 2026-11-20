@@ -75,3 +75,16 @@ The Week 3 lab implements a statically routed Layer 3 network to demonstrate man
 
 3. Secure or standalone: which would you choose for a campus network, and what does the other one cost you?
 * For a campus network I would choose secure mode. It keeps your policy, such as firewall rules and access control, in force even when the controller is down. The cost is that the network slowly stops working while the controller is down. New connections fail right away. Old connections keep working for a while, then stop when their rules expire after 60 seconds. We can reduce that cost with a replicated controller cluster and proactive rules. Standalone costs in security. Traffic keeps flowing, and the switch stops following the rules, so blocked traffic can get through again. Standalone is only suitable if there are no rules to enforce and uptime matters most.
+
+---
+
+### Week 4
+Q1: docker network inspect apilab shows a bridge network with the subnet 172.20.0.0/16, gateway 172.20.0.1, and the two containers api (172.20.0.2) and client (172.20.0.3), each with its own MAC address. It’s built from Week 6’s parts: each container is a network namespace (its own private network), a veth pair is the cable from each one to the bridge, and the Linux bridge is the virtual switch joining them. Docker also adds a small DNS service, so the client can find api by name.
+
+Q2: Don’t retry the ones that are your mistake, because the same request gets the same answer: 400 (fix the JSON), 404 (wrong URL), 405 (wrong method), 422 (fix the values), 403 (you’re not allowed, so stop). 409 is a clash with the current state, so read the state before deciding, and don’t repeat it blindly. 401 means log in again, then retry. 429 and 503 are the ones to retry: wait Retry-After seconds for 429, and use backoff for 503.
+
+Q3: The server did the change, but the reply was lost, so the script thought it failed and sent the POST again, and POST isn’t idempotent, so it made another entry. Your one run made three. The fix sends the same Idempotency-Key on every attempt, so the server recognises a repeat and replies “already done” without adding another. The key must be chosen once, before the first attempt. A new key on each retry would look like a new order, and the duplicates would come back.
+
+Q4: Your first run, with 503s, sent 26 requests, and the run with expiring tokens sent 33. Reading 208 devices at 10 per page needs only 21 requests. The extra ones are retries: 503s, 429s from the rate limit, and the 401s after tokens expired, since each retry is another request.
+
+Q5: The site filter (?site=penang) is a good answer, because the lecture never mentioned it. You could also mention that limit goes up to 50, or that the ACL entry path allows only GET and DELETE, so entries can’t be edited in place.
