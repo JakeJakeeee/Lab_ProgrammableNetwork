@@ -1,0 +1,9 @@
+logged in as netops
+attempt 1: server not answering, waiting 1.3s
+attempt 1: server not answering, waiting 1.4s
+attempt 1: server not answering, waiting 1.8s
+208 devices read (the API says 208), in 26 requests; saved devices.json
+  johor: 52
+  kl-hq: 52
+  penang: 52
+  pj-dc: 52

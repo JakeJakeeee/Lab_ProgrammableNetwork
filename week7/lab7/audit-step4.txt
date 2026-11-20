@@ -1,0 +1,45 @@
+{
+  "writes": 5,
+  "items": [
+    {
+      "seq": 11,
+      "time": "20:20:18",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 9: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    },
+    {
+      "seq": 12,
+      "time": "20:20:19",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 10: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    },
+    {
+      "seq": 13,
+      "time": "20:20:21",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 11: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    },
+    {
+      "seq": 14,
+      "time": "20:20:21",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 12: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    },
+    {
+      "seq": 15,
+      "time": "20:20:22",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 13: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    }
+  ]
+}

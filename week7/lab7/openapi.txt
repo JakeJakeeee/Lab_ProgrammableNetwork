@@ -1,0 +1,538 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "WIC2005 lab API",
+        "version": "1.0",
+        "description": "A practice network controller API for the Week 7 lab (student block 10.8.0.0/16). Rate limit: requests are limited per token; over the limit you get 429 with Retry-After."
+    },
+    "servers": [
+        {
+            "url": "http://api:8000"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "Get a token from POST /api/v1/auth/token. Tokens expire."
+            }
+        },
+        "schemas": {
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Vlan": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4094
+                    },
+                    "name": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{1,32}$"
+                    }
+                }
+            },
+            "AclEntry": {
+                "type": "object",
+                "required": [
+                    "action",
+                    "src",
+                    "dst"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "action": {
+                        "enum": [
+                            "permit",
+                            "deny"
+                        ]
+                    },
+                    "src": {
+                        "type": "string",
+                        "description": "CIDR, e.g. 10.0.10.0/24"
+                    },
+                    "dst": {
+                        "type": "string",
+                        "description": "CIDR"
+                    },
+                    "protocol": {
+                        "enum": [
+                            "any",
+                            "tcp",
+                            "udp",
+                            "icmp"
+                        ],
+                        "default": "any"
+                    },
+                    "port": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 65535,
+                        "description": "tcp or udp only"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Device": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "site": {
+                        "type": "string"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "mgmt_ip": {
+                        "type": "string"
+                    },
+                    "os_version": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/api/v1/auth/token": {
+            "post": {
+                "summary": "Log in and get a bearer token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "token, token_type, expires_in (seconds), role"
+                    },
+                    "401": {
+                        "description": "Wrong username or password.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vlans": {
+            "get": {
+                "summary": "List VLANs",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All VLANs."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a VLAN",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vlan"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created; Location says where."
+                    },
+                    "409": {
+                        "description": "That VLAN already exists.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid id or name.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/vlans/{id}": {
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Read one VLAN",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The VLAN."
+                    },
+                    "404": {
+                        "description": "No such VLAN.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Create or replace a VLAN (idempotent)",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Replaced."
+                    },
+                    "201": {
+                        "description": "Created."
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Change some fields of an existing VLAN",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Changed."
+                    },
+                    "404": {
+                        "description": "No such VLAN.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a VLAN (VLAN 1 can't be deleted)",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted."
+                    },
+                    "404": {
+                        "description": "No such VLAN.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "VLAN 1 is the default VLAN.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/acl/entries": {
+            "get": {
+                "summary": "List ACL entries",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "All entries."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Append an ACL entry (not idempotent)",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "A unique key for this change. Retrying with the same key and the same body returns the first result instead of adding the entry again (response header Idempotent-Replayed: true). The same key with a different body is rejected with 422."
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AclEntry"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Added; Location says where."
+                    },
+                    "422": {
+                        "description": "Invalid entry.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/acl/entries/{id}": {
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "get": {
+                "summary": "Read one ACL entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The entry."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete one ACL entry",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted."
+                    },
+                    "404": {
+                        "description": "No such entry.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/devices": {
+            "get": {
+                "summary": "List devices, a page at a time",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Opaque: take it from the previous page's next URL."
+                    },
+                    {
+                        "name": "site",
+                        "in": "query",
+                        "schema": {
+                            "enum": [
+                                "kl-hq",
+                                "pj-dc",
+                                "penang",
+                                "johor"
+                            ]
+                        },
+                        "description": "Only devices at this site."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "One page. Header X-Total-Count: how many devices match in all.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Device"
+                                            }
+                                        },
+                                        "next": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ],
+                                            "description": "Full URL of the next page; null on the last page."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing, invalid or expired token.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "limit or site out of range.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited: wait the seconds in Retry-After.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Temporarily unavailable: retry with backoff.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,8 @@
+logged in as netops
+logged in as netops
+logged in as netops
+208 devices read (the API says 208), in 33 requests; saved devices.json
+  johor: 52
+  kl-hq: 52
+  penang: 52
+  pj-dc: 52
