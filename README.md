@@ -78,7 +78,7 @@ The Week 3 lab implements a statically routed Layer 3 network to demonstrate man
 
 ---
 
-### Week 4
+### Week 7-lab (wrap up)
 Q1: docker network inspect apilab shows a bridge network with the subnet 172.20.0.0/16, gateway 172.20.0.1, and the two containers api (172.20.0.2) and client (172.20.0.3), each with its own MAC address. It’s built from Week 6’s parts: each container is a network namespace (its own private network), a veth pair is the cable from each one to the bridge, and the Linux bridge is the virtual switch joining them. Docker also adds a small DNS service, so the client can find api by name.
 
 Q2: Don’t retry the ones that are your mistake, because the same request gets the same answer: 400 (fix the JSON), 404 (wrong URL), 405 (wrong method), 422 (fix the values), 403 (you’re not allowed, so stop). 409 is a clash with the current state, so read the state before deciding, and don’t repeat it blindly. 401 means log in again, then retry. 429 and 503 are the ones to retry: wait Retry-After seconds for 429, and use backoff for 503.
@@ -88,3 +88,30 @@ Q3: The server did the change, but the reply was lost, so the script thought it 
 Q4: Your first run, with 503s, sent 26 requests, and the run with expiring tokens sent 33. Reading 208 devices at 10 per page needs only 21 requests. The extra ones are retries: 503s, 429s from the rate limit, and the 401s after tokens expired, since each retry is another request.
 
 Q5: The site filter (?site=penang) is a good answer, because the lecture never mentioned it. You could also mention that limit goes up to 50, or that the ACL entry path allows only GET and DELETE, so entries can’t be edited in place.
+
+---
+
+### Week 7-assignment (E4)
+AI use
+
+I used Claude (an AI assistant) for this assignment. It explained REST, idempotency and retries, helped me plan and draft sync.py, helped me debug Docker and testing problems, and helped me draft these answers. I ran and tested everything myself and checked the answers against my own code and evidence.
+
+Q1. How does sync.py decide what to change?
+
+sync.py logs in and reads the whole current state: the VLAN list and the ACL list. It compares that with intent.yaml and builds a plan before it does anything. VLANs are compared by id. VLAN 30 (guests) is in my intent but not on the API, so the plan says create-vlan 30. VLAN 10 is on both but is called users on the API and staff in my intent, so the plan says rename-vlan 10. VLAN 99 (old-guest) is on the API but not in my intent, so the plan says delete-vlan 99. VLAN 1 is never deleted. ACL entries have no id in my file, so each one is identified by everything it says: action, source, destination, protocol, port and description. The entry deny 10.8.30.0/24 -> 10.8.20.0/24 tcp/22 (guests-no-ssh) was not on the API, so the plan says create-acl. An entry on the API that isn’t in my file, or a second copy of one, gets delete-acl. With --dry-run the plan is printed and the script stops. Otherwise it applies the steps, reads the state again and builds the plan a second time. If that plan is empty, the API matches my intent, and that is also why a second run does nothing.
+
+Q2. Why is each request safe to retry?
+
+Every request goes through one function, call(), which only retries when it is safe. A GET only reads, so repeating it changes nothing. A PUT says “VLAN 50 should be called student”, so doing it twice gives the same result as doing it once. In my chaos run VLAN 50 was created once even though the script retried. A DELETE is safe because deleting something that’s already gone gives 404, and my script treats that as success. A POST adds a new ACL entry every time, so my script retries it only because it carries an Idempotency-Key. A POST without a key would make the script stop instead of retrying, and I never send one without a key. A 401 (token expired) and a 429 (too many requests) mean the server did not process the request, so sending it again after logging in or waiting Retry-After is safe. A 503 or a lost reply is the dangerous case, because the change may already have happened, and that is where idempotent methods and keys matter. After a fixed number of tries the script gives up loudly (write the number from your own call()).
+
+Q3. PUT vs POST, and the keys
+
+For VLANs I choose the id, so a PUT says exactly what should exist and is safe to repeat. ACL entries get their id from the server and only have POST, which is not idempotent, so I had to add an Idempotency-Key. For each ACL entry, apply_step() makes a random key with uuid.uuid4() once, before the first attempt, and call() sends that same key on every retry of that entry. Each entry gets its own key. If I made a new key for every attempt, the server would treat each retry as a new order, so a lost reply followed by a retry would add the entry twice, which is what retry_naive.py did. If I used the same key for every run, it would go wrong the other way, because the server would replay its old answer instead of doing the new change. For example, if an entry had been deleted and my script tried to create it again, the server could say “already done” and the entry would stay missing. Using one key for all entries would get a 422, because the body differs.
+
+Q4. Two people running sync.py at once
+
+Both would read the API at about the same time, build different plans, and apply them. Each plan treats the other person’s entries as not wanted, so each would delete what the other just created, and the result would depend on who writes last. The API could end up with a mix of two intents that nobody asked for. To make it safe, the API needs to refuse a write when the data has changed since it was read, for example with a version number (an ETag) that the client sends back in an If-Match header, so a stale write gets a 412 and the script reads again. A lock on the whole configuration would also work, or a way to send the whole intent as one all-or-nothing change, like a candidate configuration with a commit.
+
+Q5. Credentials
+
+My username and password are not in any file. sync.py reads them from the environment variables LAB_USERNAME and LAB_PASSWORD, which I set with export in the client container. The token is kept in memory inside the script and is never printed or saved. When it expires, the script logs in again. My evidence files contain only the API’s replies, not tokens. Before committing I searched my files and my git history for lab_ (the start of every token) and found nothing.
