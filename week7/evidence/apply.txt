@@ -1,0 +1,190 @@
+plan: rename-vlan 10 staff
+plan: create-vlan 30 guests
+plan: create-vlan 40 voip
+plan: create-vlan 50 student
+plan: create-vlan 60 management
+plan: delete-vlan 99
+plan: create-acl deny 10.8.30.0/24 -> 10.8.20.0/24 tcp/22 (guests-no-ssh)
+plan: create-acl permit 10.8.10.0/24 -> 10.8.20.0/24 tcp/443 (staff-to-servers-https)
+plan: create-acl deny 10.8.50.0/24 -> 10.8.10.0/24 any (student-no-staff)
+plan: create-acl permit 10.8.60.0/24 -> 10.8.20.0/24 tcp/22 (mgmt-ssh-to-servers)
+done: rename-vlan 10 staff
+done: create-vlan 30 guests
+done: create-vlan 40 voip
+  retry 2: PUT /api/v1/vlans/50 503, waiting 2.8s
+  retry 3: PUT /api/v1/vlans/50 lost reply, waiting 4.4s
+done: create-vlan 50 student
+done: create-vlan 60 management
+done: delete-vlan 99
+  retry 1: POST /api/v1/acl/entries lost reply, waiting 1.1s
+done: create-acl deny 10.8.30.0/24 -> 10.8.20.0/24 tcp/22 (guests-no-ssh)
+  retry 1: POST /api/v1/acl/entries lost reply, waiting 1.6s
+done: create-acl permit 10.8.10.0/24 -> 10.8.20.0/24 tcp/443 (staff-to-servers-https)
+done: create-acl deny 10.8.50.0/24 -> 10.8.10.0/24 any (student-no-staff)
+  retry 1: POST /api/v1/acl/entries lost reply, waiting 1.3s
+  retry 2: POST /api/v1/acl/entries 503, waiting 2.4s
+  retry 3: POST /api/v1/acl/entries 503, waiting 4.8s
+done: create-acl permit 10.8.60.0/24 -> 10.8.20.0/24 tcp/22 (mgmt-ssh-to-servers)
+check: the API matches the intent (22 requests)
+--- audit ---
+{
+  "writes": 10,
+  "items": [
+    {
+      "seq": 1,
+      "time": "21:21:50",
+      "method": "PUT",
+      "path": "/api/v1/vlans/10",
+      "status": 200,
+      "change": "set VLAN 10 staff"
+    },
+    {
+      "seq": 2,
+      "time": "21:21:50",
+      "method": "PUT",
+      "path": "/api/v1/vlans/30",
+      "status": 201,
+      "change": "created VLAN 30 guests"
+    },
+    {
+      "seq": 3,
+      "time": "21:21:50",
+      "method": "PUT",
+      "path": "/api/v1/vlans/40",
+      "status": 201,
+      "change": "created VLAN 40 voip"
+    },
+    {
+      "seq": 4,
+      "time": "21:21:54",
+      "method": "PUT",
+      "path": "/api/v1/vlans/50",
+      "status": 201,
+      "change": "created VLAN 50 student"
+    },
+    {
+      "seq": 5,
+      "time": "21:21:58",
+      "method": "PUT",
+      "path": "/api/v1/vlans/60",
+      "status": 201,
+      "change": "created VLAN 60 management"
+    },
+    {
+      "seq": 6,
+      "time": "21:21:58",
+      "method": "DELETE",
+      "path": "/api/v1/vlans/99",
+      "status": 204,
+      "change": "deleted VLAN 99"
+    },
+    {
+      "seq": 7,
+      "time": "21:21:58",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 1: deny 10.8.30.0/24 \u2192 10.8.20.0/24 tcp/22"
+    },
+    {
+      "seq": 8,
+      "time": "21:22:00",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 2: permit 10.8.10.0/24 \u2192 10.8.20.0/24 tcp/443"
+    },
+    {
+      "seq": 9,
+      "time": "21:22:01",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 3: deny 10.8.50.0/24 \u2192 10.8.10.0/24 any"
+    },
+    {
+      "seq": 10,
+      "time": "21:22:01",
+      "method": "POST",
+      "path": "/api/v1/acl/entries",
+      "status": 201,
+      "change": "added ACL entry 4: permit 10.8.60.0/24 \u2192 10.8.20.0/24 tcp/22"
+    }
+  ]
+}
+--- vlans ---
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "default"
+    },
+    {
+      "id": 10,
+      "name": "staff"
+    },
+    {
+      "id": 20,
+      "name": "servers"
+    },
+    {
+      "id": 30,
+      "name": "guests"
+    },
+    {
+      "id": 40,
+      "name": "voip"
+    },
+    {
+      "id": 50,
+      "name": "student"
+    },
+    {
+      "id": 60,
+      "name": "management"
+    }
+  ],
+  "next": null
+}
+--- acl ---
+{
+  "items": [
+    {
+      "id": 1,
+      "action": "deny",
+      "src": "10.8.30.0/24",
+      "dst": "10.8.20.0/24",
+      "protocol": "tcp",
+      "port": 22,
+      "description": "guests-no-ssh"
+    },
+    {
+      "id": 2,
+      "action": "permit",
+      "src": "10.8.10.0/24",
+      "dst": "10.8.20.0/24",
+      "protocol": "tcp",
+      "port": 443,
+      "description": "staff-to-servers-https"
+    },
+    {
+      "id": 3,
+      "action": "deny",
+      "src": "10.8.50.0/24",
+      "dst": "10.8.10.0/24",
+      "protocol": "any",
+      "port": null,
+      "description": "student-no-staff"
+    },
+    {
+      "id": 4,
+      "action": "permit",
+      "src": "10.8.60.0/24",
+      "dst": "10.8.20.0/24",
+      "protocol": "tcp",
+      "port": 22,
+      "description": "mgmt-ssh-to-servers"
+    }
+  ],
+  "next": null
+}

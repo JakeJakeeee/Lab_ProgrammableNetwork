@@ -1,0 +1,43 @@
+plan: rename-vlan 10 staff
+plan: create-vlan 30 guests
+plan: create-vlan 40 voip
+plan: create-vlan 50 student
+plan: create-vlan 60 management
+plan: delete-vlan 99
+plan: create-acl deny 10.8.30.0/24 -> 10.8.20.0/24 tcp/22 (guests-no-ssh)
+plan: create-acl permit 10.8.10.0/24 -> 10.8.20.0/24 tcp/443 (staff-to-servers-https)
+plan: create-acl deny 10.8.50.0/24 -> 10.8.10.0/24 any (student-no-staff)
+plan: create-acl permit 10.8.60.0/24 -> 10.8.20.0/24 tcp/22 (mgmt-ssh-to-servers)
+dry run: nothing changed
+--- audit ---
+{
+  "writes": 0,
+  "items": []
+}
+--- vlans ---
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "default"
+    },
+    {
+      "id": 10,
+      "name": "users"
+    },
+    {
+      "id": 20,
+      "name": "servers"
+    },
+    {
+      "id": 99,
+      "name": "old-guest"
+    }
+  ],
+  "next": null
+}
+--- acl ---
+{
+  "items": [],
+  "next": null
+}
