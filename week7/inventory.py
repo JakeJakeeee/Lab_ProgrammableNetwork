@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Week 7 lab, Steps 5 and 6: read EVERY device from the lab API, however it misbehaves.
-
-Run it in the client container:
-    export LAB_USERNAME=netops LAB_PASSWORD=netops-pass   # in the environment, never in this file
-    python3 inventory.py
-
-It writes devices.json and prints how many devices each site has. Two parts are yours to write:
-get_page() and get_all(). Look for TODO.
-"""
 import json
 import os
 import random
