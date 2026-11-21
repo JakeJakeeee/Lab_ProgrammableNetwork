@@ -151,7 +151,7 @@ def main():
     acl = get_items(c, "/api/v1/acl/entries")
     plan = make_plan(intent, vlans, acl)
 
-    if not plan:but 
+    if not plan:
         print("plan is empty: the API already matches the intent")
     for step in plan:
         print("plan:", describe(step))
